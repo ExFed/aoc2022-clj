@@ -1,34 +1,26 @@
 (ns day01.d1
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string]))
+  (:require [clojure.string :as string]))
 
 ;; https://adventofcode.com/2022/day/1
 
-(defn- indexof-max [v]
-  (reduce
-   (fn [i, j]
-     (if (>= (nth v i) (nth v j)) i j))
-   0
-   (range (.size v))))
+(defn parse-elf [lines] (mapv #(Integer/parseInt %) lines))
 
-(defn- tokenize-elves [strs]
-  (let [parts (partition-by string/blank? strs)]
-    (filterv #(not (string/blank? (first %))) parts)))
+(defn load-elves [filepath]
+  (mapv #(parse-elf (string/split-lines %)) (string/split (slurp filepath) #"\n\n")))
 
-(defn- parse-elf [elf-strs] (mapv #(Integer/parseInt %) elf-strs))
+(defn load-elves-calories [filename]
+  (mapv #(reduce + %) (load-elves (str "src/day01/" filename))))
 
-(defn- parse-elves [strs] (mapv #(parse-elf %) (tokenize-elves strs)))
-
-(defn- largest-sum-of-calories [lines]
-  (let [elves (parse-elves lines)
-        elves-calories (mapv #(reduce + %) elves)
-        max-elf (indexof-max elves-calories)]
-    (nth elves-calories max-elf)))
+(def load-elves-calories-memo (memoize load-elves-calories))
 
 (defn part1 [filename]
-  (with-open [rdr (io/reader (str "src/day01/" filename))]
-    (let [lines (line-seq rdr)]
-      (largest-sum-of-calories lines))))
+  (let [elves-calories (load-elves-calories-memo filename)]
+    (first (sort > elves-calories))))
+
+(defn part2 [filename]
+  (let [elves-calories (load-elves-calories-memo filename)]
+    (transduce (take 3) + (sort > elves-calories))))
 
 (defn -main [& args]
-  {"Part 1" (part1 (or (and (seq args) (first args)) "input"))})
+  {'part1 (part1 "input")
+   'part2 (part2 "input")})

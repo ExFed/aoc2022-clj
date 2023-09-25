@@ -5,4 +5,6 @@
 
 (deftest part1-test
   (is (= 24000 (subject/part1 "test")))
-  (is (= 71506 (subject/part1 "input"))))
+  (is (= 71506 (subject/part1 "input")))
+  (is (= 45000 (subject/part2 "test")))
+  (is (= 209603 (subject/part2 "input"))))
