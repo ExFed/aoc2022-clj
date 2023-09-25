@@ -25,7 +25,7 @@
         max-elf (indexof-max elves-calories)]
     (nth elves-calories max-elf)))
 
-(defn- part1 [filename]
+(defn part1 [filename]
   (with-open [rdr (io/reader (str "src/day01/" filename))]
     (let [lines (line-seq rdr)]
       (largest-sum-of-calories lines))))
