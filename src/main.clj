@@ -1,7 +1,8 @@
 (ns main
-  (:require [day01.d1 :as d1]))
+  (:require [day01.d1 :as d1]
+            [day02.d2 :as d2]))
 
-(def solutions [d1/-main])
+(def solutions [d1/-main, d2/-main])
 
 (defn exec-day [day-num args]
   (let [solution (nth solutions (dec day-num))]
