@@ -8,4 +8,7 @@
   (is (= 26 (subject/priority-of \z)))
   (is (= 27 (subject/priority-of \A)))
   (is (= 52 (subject/priority-of \Z)))
-  (is (= 157 (subject/part1 "test"))))
+  (is (= 157 (subject/part1 "test")))
+  (is (= 7691 (subject/part1 "input")))
+  (is (= 70 (subject/part2 "test")))
+  (is (= 2508 (subject/part2 "input"))))

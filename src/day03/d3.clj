@@ -6,15 +6,17 @@
   (->> filename
        (str "src/day03/")
        (slurp)
-       (string/split-lines)
-       (map (fn [s]
-              (let [m (/ (count s) 2)
-                    r [(subs s 0 m) (subs s m)]]
-                (map char-array r))))))
+       (string/split-lines)))
+
+(defn split-ruck-compartments [ruck]
+  (let [m (/ (count ruck) 2)]
+    [(subs ruck 0 m) (subs ruck m)]))
 
 (defn find-errors [ruck]
-  (set/intersection (set (first ruck)) (set (last ruck))))
-
+  (let [compartments (split-ruck-compartments ruck)
+        csa (set (char-array (first compartments)))
+        csb (set (char-array (second compartments)))]
+    (first (set/intersection csa csb))))
 
 (def priority-of (let [chs-lower (range (int \a) (inc (int \z)))
                        chs-upper (range (int \A) (inc (int \Z)))
@@ -26,11 +28,23 @@
     (load-rucks it)
     (map #(-> %
               (find-errors)
-              (first)
               (priority-of)) it)
     (reduce + it)))
 
-(defn part2 [filename])
+(defn find-common [triple]
+  (let [a (nth triple 0)
+        b (nth triple 1)
+        c (nth triple 2)]
+    (first (set/intersection (set a) (set b) (set c)))))
+
+(defn part2 [filename]
+  (as-> filename it
+    (load-rucks it)
+    (partition 3 it)
+    (map #(-> %
+              (find-common)
+              (priority-of)) it)
+    (reduce + it)))
 
 (defn -main [& args]
   {'part1 (part1 "input")
