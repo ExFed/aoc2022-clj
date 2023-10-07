@@ -6,15 +6,23 @@
 
 (defrecord ^:private Assignment [left right])
 
-(defn format-range [set]
-  (let [plot (map #(if (contains? set %) % ".") (range 0 10))]
-    (format "%s  %s-%s\n" (string/join plot) (apply min set) (apply max set))))
+(defn format-range [min max set]
+  (let [plot (map #(if (contains? set %) "=" ".") (range min max))]
+    (format "%s  %s-%s\n" (string/join plot) (apply clojure.core/min set) (apply clojure.core/max set))))
 
-(defn print-assignment [assignment]
-  (str (format-range (:left assignment))
-       (format-range (:right assignment))))
+(defn format-assignment [min max assignment]
+  (str (format-range min max (:left assignment))
+       (format-range min max (:right assignment))))
 
-(defn format-assignments [assignments] (map print-assignment assignments))
+(defn format-assignments [assignments]
+  (let [min (reduce min (into [] cat (map :left assignments)))
+        max (reduce max (into [] cat (map :right assignments)))]
+    (map (partial format-assignment min max) assignments)))
+
+(defn print-assignments [assignments]
+  (doseq [s (format-assignments assignments)]
+    (println s))
+  assignments)
 
 (defn parse-range-set [range-str]
   (let [range-str-pair (string/split range-str #"-")
@@ -27,12 +35,14 @@
         range-set-pair (map parse-range-set range-str-pair)]
     (Assignment. (first range-set-pair) (second range-set-pair))))
 
-(defn load-assignments [filename]
+(defn- load-assignments-0 [filename]
   (->> filename
        (str srcpath)
        (slurp)
        (string/split-lines)
        (map parse-assignment)))
+
+(def load-assignments (memoize load-assignments-0))
 
 (defn is-either-fully-contained [assignment]
   (let [l (:left assignment)
@@ -61,5 +71,6 @@
     (num-overlapping it)))
 
 (defn -main [& args]
+  (if (first args) (print-assignments (load-assignments "input")) '())
   {'part1 (part1 "input")
    'part2 (part2 "input")})
