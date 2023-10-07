@@ -34,20 +34,31 @@
        (string/split-lines)
        (map parse-assignment)))
 
-(defn is-fully-contained [assignment]
+(defn is-either-fully-contained [assignment]
   (let [l (:left assignment)
         r (:right assignment)]
     (or (set/subset? l r) (set/subset? r l))))
 
-(defn num-overlaps [assignments]
-  (count (filter is-fully-contained assignments)))
+(defn is-overlapping [assignment]
+  (let [l (:left assignment)
+        r (:right assignment)]
+    (seq (set/intersection l r))))
+
+(defn num-either-fully-contained [assignments]
+  (count (filter is-either-fully-contained assignments)))
+
+(defn num-overlapping [assignments]
+  (count (filter is-overlapping assignments)))
 
 (defn part1 [filename]
   (as-> filename it
     (load-assignments it)
-    (num-overlaps it)))
+    (num-either-fully-contained it)))
 
-(defn part2 [filename] filename)
+(defn part2 [filename]
+  (as-> filename it
+    (load-assignments it)
+    (num-overlapping it)))
 
 (defn -main [& args]
   {'part1 (part1 "input")
