@@ -2,11 +2,15 @@
   (:require [day01.d1 :as d1]
             [day02.d2 :as d2]
             [day03.d3 :as d3]
-            [day04.d4 :as d4]))
+            [day04.d4 :as d4]
+            [day05.d5 :as d5]))
 
-(def solutions [d1/-main, d2/-main, d3/-main, d4/-main])
+(def solutions [d1/-main, d2/-main, d3/-main, d4/-main, d5/-main])
 
 (defn exec-day [day-num args]
+  (when (> day-num (count solutions))
+    (throw (IllegalArgumentException.
+            (str "Day " day-num " not found ... did you add it to the solutions?"))))
   (let [solution (nth solutions (dec day-num))]
     (println (str "Day " day-num " answer:"))
     (println (apply solution args))))

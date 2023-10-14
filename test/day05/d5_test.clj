@@ -15,7 +15,7 @@
          (as-> test-supplies it
            (subject/format-supplies it)))))
 
-(deftest move-crate-test
+(deftest move-crates-test
   (is (= (lines "[D]        "
                 "[N] [C]    "
                 "[Z] [M] [P]"
@@ -25,9 +25,9 @@
            (subject/format-supplies it)))))
 
 (deftest index-of-all-test
-   (is (= [1 4 7]
-          (subject/index-of-all #(not= \space %) " a  b  c "))))
+  (is (= [1 4 7]
+         (subject/index-of-all #(not= \space %) " a  b  c "))))
 
-((deftest part1-test
-      (is (= '(C M Z)
-             (subject/part1 "test")))))
+(deftest part1-test
+  (is (= "CMZ"
+         (subject/part1 "test"))))
