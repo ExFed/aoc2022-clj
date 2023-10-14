@@ -3,8 +3,10 @@
 
 (def srcpath "src/day05/")
 
-(defn take-crate-from-stack [stack] [(first stack) (rest stack)])
-(defn put-crate-into-stack [stack crate] (conj stack crate))
+(defn take-crates-from-stack
+  ([stack] (take-crates-from-stack stack 1))
+  ([stack num-crates] [(take num-crates stack) (drop num-crates stack)]))
+(defn put-crates-into-stack [stack crates] (concat crates stack))
 (defn format-crate [crate] (if crate (str "[" crate "]") "   "))
 
 (defn get-crate
@@ -16,26 +18,31 @@
         kcats (reverse stack)]
     (nth kcats cn nil)))
 
-(defn take-crate [supplies from]
-  (let [from (dec from) ;; one-indexing
-        stack (nth supplies from)
-        [crate stack] (take-crate-from-stack stack)
-        crate-and-supplies [crate (assoc supplies from stack)]]
-    crate-and-supplies))
+(defn take-crates
+  ([supplies from] (take-crates supplies from 1))
+  ([supplies from num-crates]
+   (let [from (dec from) ;; one-indexing
+         stack (nth supplies from)
+         [crates stack] (take-crates-from-stack stack num-crates)
+         crate-and-supplies [crates (assoc supplies from stack)]]
+     crate-and-supplies)))
 
-(defn put-crate [crate-and-supplies to]
-  (let [crate (first crate-and-supplies)
-        supplies (second crate-and-supplies)
+(defn put-crates [crates-and-supplies to]
+  (let [crates (first crates-and-supplies)
+        supplies (second crates-and-supplies)
         to (dec to) ;; one-indexing
         stack (nth supplies to)
-        stack (put-crate-into-stack stack crate)
+        stack (put-crates-into-stack stack crates)
         supplies (assoc supplies to stack)]
     supplies))
 
-(defn move-crate [supplies from to]
-  (-> supplies
-      (take-crate from)
-      (put-crate to)))
+(defn move-crates
+  ([supplies op] (move-crates supplies (:from op) (:to op) (:move op)))
+  ([supplies from to] (move-crates supplies from to 1))
+  ([supplies from to num-crates]
+   (-> supplies
+       (take-crates from num-crates)
+       (put-crates to))))
 
 (defn format-supplies [supplies]
   (let [width (count supplies)
@@ -100,18 +107,25 @@
        (slurp)
        (parse-supplies-and-procedure)))
 
-(defn execute-operation [supplies op]
-  (let [moves-left (:move op)]
-    (if (not= 0 moves-left)
-      (recur (move-crate supplies (:from op) (:to op)) (assoc op :move (dec moves-left)))
-      supplies)))
+(defn execute-operation
+  ([supplies op] (execute-operation supplies op false))
+  ([supplies op batch-move]
+   (if-not (< 0 (:move op))
+     supplies
+     (let [moves-remaining (if batch-move (:move op) 1)
+           supplies (move-crates supplies (:from op) (:to op) moves-remaining)
+           next-op (assoc op :move (- (:move op) moves-remaining))]
+       (recur supplies next-op batch-move)))))
 
 (defn execute-procedure
-  ([supplies procedure] (execute-procedure supplies (first procedure) (rest procedure)))
-  ([supplies next-op procedure]
-   (if next-op
-     (recur (execute-operation supplies next-op) (first procedure) (rest procedure))
-     supplies)))
+  ([supplies procedure] (execute-procedure supplies procedure false))
+  ([supplies procedure batch-move]
+   (loop [supplies supplies
+          next-op (first procedure)
+          procedure (rest procedure)]
+     (if-not next-op
+       supplies
+       (recur (execute-operation supplies next-op batch-move) (first procedure) (rest procedure))))))
 
 (defn get-top-crates [supplies]
   (string/join (map first supplies)))
@@ -121,7 +135,11 @@
         supplies (execute-procedure supplies procedure)]
     (get-top-crates supplies)))
 
-(defn part2 [filename] '())
+(defn part2 [filename]
+  (let [[supplies procedure] (load-supplies-and-procedure filename)
+        supplies (execute-procedure supplies procedure true)]
+    (get-top-crates supplies)))
+
 
 (defn -main [& args]
   {'part1 (part1 "input")
