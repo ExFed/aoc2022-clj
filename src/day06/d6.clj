@@ -1,31 +1,39 @@
 (ns day06.d6)
 
-(def buffer-size 4)
-(defn append-circular
-  ([buffer element]
-   (if (< (count buffer) buffer-size)
-     (conj buffer element)
-     (recur (subvec buffer 1) element))))
+(defn append-circular [buffer element]
+  (conj (subvec buffer 1) element))
 
 (defn is-start-marker [buffer]
-  (and (= buffer-size (count buffer))
+  (and (every? #(not (nil? %)) buffer)
        (apply distinct? buffer)))
 
-(defn indexof-start-packet
-  ([input-str] (indexof-start-packet input-str 0))
-  ([input-str start-index]
-   (loop [input input-str index start-index buffer []]
-     (if (is-start-marker buffer)
-       index
-       (recur (subs input 1) (inc index) (append-circular buffer (first input)))))))
+(defn make-buffer
+  ([length] (make-buffer length nil))
+  ([length value] (reduce (fn [a _] (conj a value)) [] (range length))))
+
+(defn indexof-marker
+  ([marker-length input-str] (indexof-marker marker-length input-str 0))
+  ([marker-length input-str start-index]
+   (loop [input input-str index start-index buffer (make-buffer marker-length)]
+     (cond
+       (empty? input) nil
+       (is-start-marker buffer) index
+       :else (recur (subs input 1)
+                    (inc index)
+                    (append-circular buffer (first input)))))))
 
 (def srcpath "src/day06/")
 (defn load-signal-stream [filename] (slurp (str srcpath filename)))
 
 (defn part1 [filename]
-  (indexof-start-packet (load-signal-stream filename)))
+  (->> filename
+       (load-signal-stream)
+       (indexof-marker 4)))
 
-(defn part2 [filename] '())
+(defn part2 [filename]
+    (->> filename
+        (load-signal-stream)
+        (indexof-marker 14)))
 
 (defn -main [& args]
   {'part1 (part1 "input")
