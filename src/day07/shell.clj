@@ -9,7 +9,7 @@
 
 (defrecord ^:private FSContext [cwd entries])
 
-(def dir-entry-type DirEntry)
+(def root-dir (DirEntry. []))
 
 (defn- fs-insert [^FSContext context entry]
   (update context :entries conj entry))
@@ -57,7 +57,7 @@
 
 (defn- parse-shell-lines [shell-lines]
   (loop [lnum 0
-         [context buffer-lines] [(FSContext. [] []) shell-lines]]
+         [context buffer-lines] [(FSContext. [] [root-dir]) shell-lines]]
     (if (empty? buffer-lines)
       (sort-by :path util/lex-comp (:entries context))
       (recur (inc lnum) (interpret-command-line context buffer-lines lnum)))))

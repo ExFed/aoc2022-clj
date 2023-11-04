@@ -44,16 +44,14 @@
 
 (defn format-maptree
   ([tree] (format-maptree tree 2))
-  ([tree indent] (str "/" (format-maptree tree indent 0)))
+  ([tree indent] (print-str "/" (format-maptree tree indent 0)))
   ([tree indent level]
    (if (map? tree)
      (let [spaces (string/join (repeat (* indent level) " "))
            sublevel (inc level)
-           subtrees (map #(str "- " (first %) (format-maptree (second %) indent sublevel)) tree)]
-       (string/join (map (partial str "\n" spaces) subtrees)))
-     (str " " tree))))
+           subtrees (map #(print-str "- " (first %) (format-maptree (second %) indent sublevel)) tree)]
+       (string/join (map (partial print-str "\n" spaces) subtrees)))
+     (print-str " " tree))))
 
 
-;; ((linfn #(* 9 %) #(- % 12)) 6)
-;; (take 3 ((linfn (repeat (partial * 2))) 1))
-(take 2 ((linfn (partial * 9) #(- % 12) #(str "hello " % " world") #(do (println "capitalizing...") (clojure.string/capitalize %))) 6))
+(defn transpose ([colls] (apply mapv vector colls)))
