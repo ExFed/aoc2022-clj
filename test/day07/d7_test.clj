@@ -11,4 +11,6 @@
 
 (deftest part2-test
   (is (= 24933642
-         (subject/part2 "test"))))
+         (subject/part2 "test"))
+      (= 6999588
+         (subject/part2 "input"))))
