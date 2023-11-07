@@ -37,24 +37,22 @@
 (defn grid-coords [grid]
   (take-while identity (iterate (partial grid-coords-next grid) [0 0])))
 
-(defn hidden-from-edge?
+(defn visible-from-edge?
   ([grid coord]
    (and
-    (hidden-from-edge? grid coord :north)
-    (hidden-from-edge? grid coord :east)
-    (hidden-from-edge? grid coord :west)
-    (hidden-from-edge? grid coord :south)))
+    (visible-from-edge? grid coord :north)
+    (visible-from-edge? grid coord :east)
+    (visible-from-edge? grid coord :west)
+    (visible-from-edge? grid coord :south)))
   ([grid coord dir]
    (let [cell0 (grid-cell grid coord)
          coord1 (adv coord dir)]
      (loop [coord1 coord1]
        (let [cell1 (grid-cell grid coord1)]
          (cond
-           (nil? cell1) false
-           (<= cell0 cell1) true
+           (nil? cell1) true
+           (<= cell0 cell1) false
            :else (recur (adv coord1 dir))))))))
-
-(defn visible-from-edge? [grid coord] (not (hidden-from-edge? grid coord)))
 
 (defn part1 [filename]
   (let [grid (parse-grid filename)
