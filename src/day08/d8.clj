@@ -16,7 +16,7 @@
 (defn format-grid
   [grid] (string/join "\n" (map (partial string/join "\t") grid)))
 
-(defn grid-cell [grid [row-index col-index]]
+(defn grid-height [grid [row-index col-index]]
   (let [row-cells (nth grid row-index [])]
     (nth row-cells col-index nil)))
 
@@ -30,8 +30,8 @@
 
 (defn grid-coords-next [grid [row col]]
   (cond
-    (grid-cell grid [row (inc col)]) [row (inc col)]
-    (grid-cell grid [(inc row) 0]) [(inc row) 0]
+    (grid-height grid [row (inc col)]) [row (inc col)]
+    (grid-height grid [(inc row) 0]) [(inc row) 0]
     :else nil))
 
 (defn grid-coords [grid]
@@ -45,9 +45,9 @@
     (visible-from-edge? grid coord :west)
     (visible-from-edge? grid coord :south)))
   ([grid coord dir]
-   (let [h0 (grid-cell grid coord)]
+   (let [h0 (grid-height grid coord)]
      (loop [coord (adv coord dir)]
-       (let [h1 (grid-cell grid coord)]
+       (let [h1 (grid-height grid coord)]
          (cond
            (nil? h1) true
            (<= h0 h1) false
@@ -58,7 +58,28 @@
         cells-visible (map #(visible-from-edge? grid %) (grid-coords grid))]
     (count (filter identity cells-visible))))
 
-(defn part2 [filename])
+(defn trees-visible [grid coord dir]
+  (let [h0 (grid-height grid coord)]
+    (loop [coord (adv coord dir) n 0]
+      (let [h1 (grid-height grid coord)]
+        (cond
+          (nil? h1) n ;; see the edge (no tree!)
+          (>= h1 h0) (inc n) ;; see a taller tree
+          :else (recur (adv coord dir) (inc n)) ;; see a shorter tree (keep looking)
+          )))))
+
+(defn scenic-score [grid coord]
+  (*
+   (trees-visible grid coord :north)
+   (trees-visible grid coord :east)
+   (trees-visible grid coord :west)
+   (trees-visible grid coord :south)))
+
+(defn part2 [filename]
+  (let [grid (parse-grid filename)
+        coords (grid-coords grid)
+        scenic-scores (map (partial scenic-score grid) coords)]
+    (apply max scenic-scores)))
 
 (defn -main [& args]
   {'part1 (part1 "input")
