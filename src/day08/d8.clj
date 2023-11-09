@@ -39,29 +39,26 @@
 
 (defn visible-from-edge?
   ([grid coord]
-   (and
+   (or
     (visible-from-edge? grid coord :north)
     (visible-from-edge? grid coord :east)
     (visible-from-edge? grid coord :west)
     (visible-from-edge? grid coord :south)))
   ([grid coord dir]
-   (let [cell0 (grid-cell grid coord)
-         coord1 (adv coord dir)]
-     (loop [coord1 coord1]
-       (let [cell1 (grid-cell grid coord1)]
+   (let [h0 (grid-cell grid coord)]
+     (loop [coord (adv coord dir)]
+       (let [h1 (grid-cell grid coord)]
          (cond
-           (nil? cell1) true
-           (<= cell0 cell1) false
-           :else (recur (adv coord1 dir))))))))
+           (nil? h1) true
+           (<= h0 h1) false
+           :else (recur (adv coord dir))))))))
 
 (defn part1 [filename]
   (let [grid (parse-grid filename)
-        cells-visible (map (partial visible-from-edge? grid) (grid-coords grid))]
-    (count (filter identity cells-visible)))
-)
+        cells-visible (map #(visible-from-edge? grid %) (grid-coords grid))]
+    (count (filter identity cells-visible))))
 
 (defn part2 [filename])
-
 
 (defn -main [& args]
   {'part1 (part1 "input")
