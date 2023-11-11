@@ -55,3 +55,23 @@
 
 
 (defn transpose ([colls] (apply mapv vector colls)))
+
+(def origin (cons 0 (lazy-seq origin)))
+
+(defn =origin [v] (every? zero? v))
+
+(defn +v
+  ([] origin)
+  ([x] (vec x))
+  ([x y] (mapv (fn [[xi yi]] (+ xi yi)) (transpose [x y])))
+  ([x y & more] (reduce +v (+v x y) more)))
+
+(defn -v
+  ([a] (mapv - a))
+  ([a b] (mapv (fn [[ai bi]] (- ai bi)) (transpose [a b])))
+  ([x y & more] (reduce -v (-v x y) more)))
+
+(defn load-data [day-num filename]
+  (slurp (str "src/day" (format "%02d" day-num) "/" filename)))
+
+(defn doprintln [x] (println x) x)

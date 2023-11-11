@@ -6,7 +6,8 @@
             [day05.d5 :as d5]
             [day06.d6 :as d6]
             [day07.d7 :as d7]
-            [day08.d8 :as d8]))
+            [day08.d8 :as d8]
+            [day09.d9 :as d9]))
 
 (def solutions [d1/-main
                 d2/-main
@@ -15,7 +16,8 @@
                 d5/-main
                 d6/-main
                 d7/-main
-                d8/-main])
+                d8/-main
+                d9/-main])
 
 (defn exec-day [day-num args]
   (when (> day-num (count solutions))
