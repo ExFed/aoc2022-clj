@@ -71,6 +71,16 @@
   ([a b] (mapv (fn [[ai bi]] (- ai bi)) (transpose [a b])))
   ([x y & more] (reduce -v (-v x y) more)))
 
+(defn maxv
+  ([x] x)
+  ([x y] (mapv (fn [[ai bi]] (max ai bi)) (transpose [x y])))
+  ([x y & more] (reduce maxv (maxv x y) more)))
+
+(defn minv
+  ([x] x)
+  ([x y] (mapv (fn [[ai bi]] (min ai bi)) (transpose [x y])))
+  ([x y & more] (reduce minv (minv x y) more)))
+
 (defn load-data [day-num filename]
   (slurp (str "src/day" (format "%02d" day-num) "/" filename)))
 
