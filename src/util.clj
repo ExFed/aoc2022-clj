@@ -85,3 +85,9 @@
   (slurp (str "src/day" (format "%02d" day-num) "/" filename)))
 
 (defn doprintln [x] (println x) x)
+
+(defn clamp [min max x]
+  (cond
+    (< x min) min
+    (> x max) max
+    :else x))

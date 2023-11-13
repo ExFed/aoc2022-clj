@@ -1,6 +1,6 @@
 (ns day09.d9
   (:require [clojure.string :as string]
-            [util :refer [+v, -v]]))
+            [util :refer [+v -v maxv minv clamp]]))
 
 (defn parse-motions [filename]
   (let [data (util/load-data 9 filename)
@@ -9,24 +9,46 @@
     (map #(vec [(first %) (Integer/parseInt (second %))]) pairs)))
 
 (def init-coord [0 0])
-(def init-rope {::head init-coord ::tail init-coord})
+(def init-rope [init-coord init-coord])
 
-(defn print-rope [h w {:keys [::head ::tail]}]
-  (loop [x 0 y (dec h)]
+(defn print-rope [[left bottom right top] [head tail]]
+  (loop [x left y top]
     (cond
       (= head [x y]) (do (print "H") (recur (inc x) y))
       (= tail [x y]) (do (print "T") (recur (inc x) y))
       (= init-coord [x y]) (do (print "s") (recur (inc x) y))
-      (>= x w) (do (println) (recur 0 (dec y)))
-      (>= y 0) (do (print ".") (recur (inc x) y)))))
+      (> x right) (do (println) (recur 0 (dec y)))
+      (>= y bottom) (do (print ".") (recur (inc x) y)))))
 
-(defn print-steps [h w motion-steps]
-  (doseq [[motion steps] motion-steps]
-    (println "==" (first motion) (second motion) "==")
-    (println)
-    (doseq [step steps]
-      (print-rope h w step)
-      (println))))
+(defn print-coord [rope coord]
+  (let [i (.indexOf rope coord)]
+    (cond
+      (= 1 i) (print "H")
+      (< 1 i) (print i)
+      (= init-coord coord) (print "s")
+      :else (print "."))))
+
+(defn print-knots [[left bottom right top] rope]
+  (loop [x left y top]
+    (cond
+      (> x right) (do (println) (recur 0 (dec y)))
+      (>= y bottom) (do (print-coord rope [x y]) (recur (inc x) y)))))
+
+(defn get-bounds [motion-steps]
+  (let [heads (mapcat #(map first (second %)) motion-steps)]
+    (reduce #(into (minv (subvec %1 0 2) %2)
+                   (maxv (subvec %1 2 4) %2))
+            [0 0 0 0]
+            heads)))
+
+(defn print-steps [motion-steps]
+  (let [bounds (get-bounds motion-steps)]
+    (doseq [[motion steps] motion-steps]
+      (println "==" (first motion) (second motion) "==")
+      (println)
+      (doseq [step steps]
+        (print-rope bounds step)
+        (println)))))
 
 (defn parse-direction [dir]
   (condp = dir
@@ -38,21 +60,28 @@
 
 (defn move-coord [coord dir] (+v coord (parse-direction dir)))
 
-(defn move-tail [prev-rope {:keys [::head ::tail] :as rope}]
-  (let [[x-dist y-dist] (-v head tail)]
-    (cond
-      (or (<= 2 (Math/abs x-dist))
-          (<= 2 (Math/abs y-dist))) (assoc rope ::tail (::head prev-rope))
-      :else rope)))
+(defn move-knots
+  ([dir rope] (move-knots dir (first rope) (next rope)))
+  ([dir head tails]
+   (loop [heads [(move-coord head dir)]
+          mid (first tails)
+          tails (next tails)]
+     (let [[x-dist y-dist] (-v (peek heads) mid)
+           [dx dy] (if (or (> (Math/abs x-dist) 1) (> (Math/abs y-dist) 1))
+                     [(util/clamp -1 1 x-dist) (util/clamp -1 1 y-dist)]
+                     [0 0])
+           next-mid (+v mid [dx dy])
+           next-heads (conj heads next-mid)]
+       (if (empty? tails)
+         next-heads
+         (recur next-heads (first tails) (next tails)))))))
 
 (defn move-rope [rope [dir num]]
-  (loop [{:keys [::head ::tail] :as prev-rope} rope
-         ropes []
+  (loop [ropes [rope]
          num num]
     (if (> num 0)
-      (let [next-rope {::head (move-coord head dir) ::tail tail}
-            next-rope (move-tail prev-rope next-rope)]
-        (recur next-rope (conj ropes next-rope) (dec num)))
+      (let [rope (move-knots dir (peek ropes))]
+        (recur (conj ropes rope) (dec num)))
       ropes)))
 
 (defn interpret-motions [filename]
@@ -68,7 +97,7 @@
         (recur motions (peek ropes) motion-steps)))))
 
 (defn count-unique-tail-positions [motion-steps]
-  (let [tails (set (mapcat #(map ::tail (second %)) motion-steps))]
+  (let [tails (set (mapcat #(map second (second %)) motion-steps))]
     (count tails)))
 
 (defn part1 [filename]
