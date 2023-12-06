@@ -20,3 +20,9 @@
          (subject/move-knots "U" [[1 1] [0 0]])))
   (is (= [[2 1] [1 1]]
          (subject/move-knots "R" [[1 1] [0 0]]))))
+
+(deftest part2-test
+  (is (= 1
+         (subject/part2 "test")))
+  (is (= 2478
+         (subject/part2 "input"))))

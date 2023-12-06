@@ -92,7 +92,7 @@
     (count-unique-tail-positions motion-steps)))
 
 (defn part2 [filename]
-  (let [motion-steps (interpret-motions filename 9)]
+  (let [motion-steps (interpret-motions filename 10)]
     (count-unique-tail-positions motion-steps)))
 
 (defn -main [& args]
