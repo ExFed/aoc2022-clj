@@ -8,31 +8,17 @@
         pairs (map #(string/split % #" ") lines)]
     (map #(vec [(first %) (Integer/parseInt (second %))]) pairs)))
 
-(def init-coord [0 0])
-(def init-rope [init-coord init-coord])
+(def init-knot [0 0])
+(defn init-rope [len] (vec (repeat len init-knot)))
 
 (defn print-rope [[left bottom right top] [head tail]]
   (loop [x left y top]
     (cond
       (= head [x y]) (do (print "H") (recur (inc x) y))
       (= tail [x y]) (do (print "T") (recur (inc x) y))
-      (= init-coord [x y]) (do (print "s") (recur (inc x) y))
+      (= init-knot [x y]) (do (print "s") (recur (inc x) y))
       (> x right) (do (println) (recur 0 (dec y)))
       (>= y bottom) (do (print ".") (recur (inc x) y)))))
-
-(defn print-coord [rope coord]
-  (let [i (.indexOf rope coord)]
-    (cond
-      (= 1 i) (print "H")
-      (< 1 i) (print i)
-      (= init-coord coord) (print "s")
-      :else (print "."))))
-
-(defn print-knots [[left bottom right top] rope]
-  (loop [x left y top]
-    (cond
-      (> x right) (do (println) (recur 0 (dec y)))
-      (>= y bottom) (do (print-coord rope [x y]) (recur (inc x) y)))))
 
 (defn get-bounds [motion-steps]
   (let [heads (mapcat #(map first (second %)) motion-steps)]
@@ -84,9 +70,9 @@
         (recur (conj ropes rope) (dec num)))
       ropes)))
 
-(defn interpret-motions [filename]
+(defn interpret-motions [filename rope-len]
   (loop [motions (parse-motions filename)
-         rope init-rope
+         rope (init-rope rope-len)
          motion-steps [['(Initial State) [rope]]]]
     (let [motion (first motions)
           ropes (move-rope rope motion)
@@ -97,15 +83,17 @@
         (recur motions (peek ropes) motion-steps)))))
 
 (defn count-unique-tail-positions [motion-steps]
-  (let [tails (set (mapcat #(map second (second %)) motion-steps))]
-    (count tails)))
+  (let [tails (mapcat #(map last (second %)) motion-steps)
+        unique-tails (set tails)]
+    (count unique-tails)))
 
 (defn part1 [filename]
-  (let [motion-steps (interpret-motions filename)]
+  (let [motion-steps (interpret-motions filename 2)]
     (count-unique-tail-positions motion-steps)))
 
-
-(defn part2 [filename])
+(defn part2 [filename]
+  (let [motion-steps (interpret-motions filename 9)]
+    (count-unique-tail-positions motion-steps)))
 
 (defn -main [& args]
   {'part1 (part1 "input")
